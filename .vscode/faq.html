@@ -1,0 +1,116 @@
+<style>
+  .faq-container {
+    max-width: 800px;
+    margin: 20px auto;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  
+  .faq-container details {
+    margin-bottom: 12px;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+  
+  .faq-container summary {
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #2c3e50;
+    list-style: none; /* 隱藏預設箭頭 */
+    position: relative;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  
+  /* 針對不同瀏覽器隱藏預設箭頭 */
+  .faq-container summary::-webkit-details-marker {
+    display: none;
+  }
+  
+  .faq-container summary:hover {
+    background-color: #eef2f5;
+  }
+  
+  /* 自訂展開/收合圖示 */
+  .faq-container summary::after {
+    content: '+';
+    position: absolute;
+    right: 20px;
+    font-size: 20px;
+    color: #6c757d;
+  }
+  
+  .faq-container details[open] summary::after {
+    content: '−'; /* 收合時顯示減號 */
+  }
+  
+  .faq-container details[open] summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .faq-container p {
+    padding: 16px 20px;
+    margin: 0;
+    line-height: 1.6;
+    color: #4a5568;
+    font-size: 15px;
+  }
+</style>
+
+<div class="faq-container">
+  <details>
+    <summary>Q1. 軟體功能與能源管理對省電、減碳有什麼幫助？</summary>
+    <p>對於製造業工廠端，透過 EMS 可以即時監測各廠區、設備與產線的用電狀況，協助找出高耗能設備、待機耗能與異常用電情況，協助企業進一步做節能改善與用電最佳化。除了節能直接帶來的減碳效益外，能源數據採集的細化與自動化，也能大幅降低碳活動數據蒐集難度並提升數據可靠度。</p>
+  </details>
+
+  <details>
+    <summary>Q2. 除了安裝智慧電表外還需要安裝什麼？</summary>
+    <p>為盡量減少對原有廠房線路的干預，目前方案主要採用 WIFI通訊，先對工廠端的網路與通訊基礎設施進行評估，必要時增設通訊設備或者是評估改走有線的通訊方式例如RS485 。</p>
+  </details>
+
+  <details>
+    <summary>Q3. 請問整套方案的計費方式為何？後台的管理系統是另外購買的嗎？</summary>
+    <p>目前方案規劃以硬體買斷、軟體訂閱方式為主，會依照客戶實際需求的廠區數量、監測點位以及 IoT 設備數量進行評估與報價，EMS系統則會依需求的模組內容提供對應報價。</p>
+  </details>
+
+  <details>
+    <summary>Q4. 有 24 小時客服專線嗎？數據出現異常怎麼支援？</summary>
+    <p>因能源管理系統通常以數據趨勢分析與告警通知為主，較少有7*24的支援服務，目前系統可透過告警模組即時通知客戶異常狀況，並提供遠端協助進行問題排查。若客戶有特殊需求，也可再依專案規劃對應的支援方式。</p>
+  </details>
+
+  <details>
+    <summary>Q5. 碳盤查數據是可以直接提供給政府審查的嗎？</summary>
+    <p>EMS 提供的能源活動數據可作為碳盤查的重要數據來源，但正式碳排資料通常仍需透過 CMS 碳管理系統進一步進行排放源分類、碳排計算與報表整理。實際政府申報或查核作業，也通常會搭配第三方顧問或查證單位進行確認，以確保資料符合相關規範。</p>
+  </details>
+
+  <details>
+    <summary>Q6. 能計算出尖峰、離峰，看出哪一廠區或設備的用電量最多嗎？</summary>
+    <p>可以，智慧電表會依實際安裝場域，在 EMS 系統中設定對應的設備或廠區歸屬，可透過設備、產線或廠區維度進行用電量比較與分析，並依數據回傳時間彙整出尖峰、半尖峰與離峰時段的耗電情況。</p>
+  </details>
+</div>
+
+<script>
+  // 選取所有 faq-container 內的 details 元素
+  const faqs = document.querySelectorAll('.faq-container details');
+
+  faqs.forEach((faq) => {
+    // 監聽原生的 toggle 事件
+    faq.addEventListener('toggle', () => {
+      // 當前點擊的 details 為開啟狀態時
+      if (faq.open) {
+        faqs.forEach((otherFaq) => {
+          // 若其他的 details 不是當前點擊的，且處於開啟狀態，則將其關閉
+          if (otherFaq !== faq && otherFaq.open) {
+            otherFaq.open = false;
+          }
+        });
+      }
+    });
+  });
+</script>
