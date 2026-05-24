@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧電表與 VR 模擬減碳系統</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            /* 工業藍灰色系 */
+            --primary-dark: #0f172a;
+            --primary-color: #1e293b;
+            --secondary-color: #334155; 
+            --background-gray: #cbd5e0; /* 質感背景灰 */
+            --text-color: #1e293b;
+            --accent-blue: #1d4ed8; /* 飽和亮藍 */
+            --white: #ffffff;
+            --danger: #e53e3e;
+            --success: #10b981;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--background-gray);
+            color: var(--text-color);
+            margin: 0; padding: 0; line-height: 1.8;
+        }
+
+        /* 標題 Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            color: white; padding: 2.5rem 0; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
+        }
+        header::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 25px 20px;
+        }
+
+        h1 { margin: 0; font-weight: 700; font-size: 1.8rem; letter-spacing: 2px; position: relative; z-index: 1;}
+
+        /* 主容器 */
+        .tab-container {
+            max-width: 1300px; margin: 2rem auto; background: var(--white);
+            border-radius: 20px; box-shadow: var(--card-shadow);
+            overflow: hidden; min-height: 850px; border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* 導覽列 */
+        .tabs { display: flex; background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0; }
+        .tab-button {
+            flex: 1; padding: 1.5rem 1rem; border: none; background: none;
+            font-size: 1.15rem; font-weight: 700; color: #64748b; cursor: pointer; transition: 0.3s;
+        }
+        .tab-button:hover { background-color: #e2e8f0; color: var(--accent-blue); }
+        .tab-button.active { background-color: var(--white); color: var(--accent-blue); position: relative; }
+        .tab-button.active::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background-color: var(--accent-blue); }
+
+        /* 內容區塊 */
+        .tab-content { display: none; padding: 3rem; animation: fadeIn 0.6s ease; }
+        .tab-content.active { display: block; }
+
+        /* 子導覽 (基礎介紹用) */
+        .sub-nav { display: flex; gap: 1.2rem; margin-bottom: 2.5rem; justify-content: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.5rem; }
+        .sub-btn {
+            padding: 0.7rem 1.8rem; border-radius: 50px; border: 2px solid #cbd5e1; 
+            background: white; font-weight: 700; cursor: pointer; transition: 0.3s; color: #475569;
+        }
+        .sub-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+        .sub-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+        .sub-content { display: none; animation: fadeIn 0.4s ease; }
+        .sub-content.active { display: block; }
+
+        /* 卡片與格點 */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+        .info-card { 
+            padding: 2rem; border-radius: 16px; background: var(--white); border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s;
+        }
+        .info-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+
+        /* 首頁 Hero */
+        .home-hero {
+            height: 380px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('p1.jpg') no-repeat center center; /* 💡 P1 圖片位置：若檔名不同 (如 p1.png) 或使用網路網址，請更改此處 */
+            background-size: cover; color: white; text-align: center; margin-bottom: 3rem;
+        }
+
+        /* 參數面板 */
+        .param-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 1.5rem; }
+        .param-tag { 
+            background: var(--primary-dark); color: #38bdf8; padding: 15px 10px; border-radius: 10px; text-align: center; font-size: 0.95rem; font-weight: 700;
+        }
+        .param-tag span { color: #94a3b8; font-size: 0.7rem; display: block; margin-bottom: 4px; }
+
+        /* 圖片容器 */
+        .image-box { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .image-box img { width: 100%; display: block; }
+
+        /* 流程步驟 */
+        .process-step { display: flex; align-items: flex-start; gap: 1.2rem; margin-bottom: 1.2rem; background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .step-num { background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; }
+
+        /* 教材專用樣式 */
+        .motivation-expanded { background: #f8fafc; border-left: 10px solid var(--primary-color); padding: 2.5rem; border-radius: 0 16px 16px 0; margin-bottom: 3rem; }
+        .objective-item { background: #fff; padding: 1rem; border-radius: 8px; border: 1px solid #edf2f7; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 12px; font-size: 0.95rem; }
+        .objective-item i { color: var(--accent-blue); }
+
+        /* FAQ */
+        .faq-container { width: 100%; }
+        .faq-container details { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1.2rem; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .faq-container details:hover { border-color: var(--accent-blue); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .faq-container summary {
+            padding: 1.5rem; font-size: 1.15rem; font-weight: 700; cursor: pointer; color: var(--primary-color);
+            list-style: none; position: relative; border-radius: 12px; transition: 0.2s ease;
+        }
+        .faq-container summary::-webkit-details-marker { display: none; }
+        .faq-container summary::after { content: '+'; position: absolute; right: 20px; font-size: 1.5rem; color: var(--accent-blue); top: 50%; transform: translateY(-50%); }
+        .faq-container details[open] summary::after { content: '−'; }
+        .faq-container details[open] summary {
+            border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid #e2e8f0;
+            border-left: 6px solid var(--accent-blue); padding-left: calc(1.5rem - 6px);
+        }
+        .faq-container p {
+            background: #f8fafc; padding: 1.5rem; margin: 0; font-size: 1rem; line-height: 1.8;
+            border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+        }
+
+        .tag { display: inline-block; padding: 4px 12px; background: #e2e8f0; border-radius: 6px; font-size: 0.9rem; margin-right: 8px; color: var(--primary-color); font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 1024px) { .grid-2, .grid-3 { grid-template-columns: 1fr !important; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>電力看得見，碳排降得下：智慧監控與 VR 模擬的減碳圓舞曲</h1>
+</header>
+
+<div class="tab-container">
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'home')">首頁</button>
+        <button class="tab-button" onclick="openTab(event, 'intro')">基礎介紹</button>
+        <button class="tab-button" onclick="openTab(event, 'material')">教材介紹</button>
+        <button class="tab-button" onclick="openTab(event, 'simulation')">互動模擬</button>
+        <button class="tab-button" onclick="openTab(event, 'faq')">常見問題</button>
+    </div>
+
+    <div id="home" class="tab-content active">
+        <div class="home-hero">
+            <div>
+                <h2 style="font-size: 2.8rem; margin-bottom: 0.8rem; border:none;">智慧能源管理與培訓</h2>
+                <p style="font-size: 1.3rem; opacity: 0.95;">數據連結行動，透過 VR 實驗室預見減碳成果</p>
+            </div>
+        </div>
+        
+        <div class="grid-2">
+            <div class="info-card">
+                <h3 style="color:var(--accent-blue);"><i class="fas fa-bridge"></i> 數據與人的橋樑</h3>
+                <p>我們發現智慧電表雖然擁有強大的數據基礎，但缺乏一個與使用者對話的橋樑。透過本系統，複雜的電力參數將轉化為直觀的視覺反饋。</p>
+            </div>
+            <div class="info-card" style="background: #f1f5f9;">
+                <h3 style="color:var(--secondary-color);"><i class="fas fa-shield-alt"></i> 數位轉型標配</h3>
+                <p>應對國際供應鏈稽核，自動化能耗監控不再是選項，而是企業維持國際競爭力的「標配」。</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem;">
+            <h2 style="text-align:center;"><i class="fas fa-lightbulb"></i> 安裝智慧電表，您可以知道什麼？</h2>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="info-card">
+                    <h4>看見隱形消耗</h4>
+                    <p>傳統電表要等一個月後的帳單，智慧電表讓您即時看到「現在」用了多少電，精準抓出待機電力浪費。</p>
+                </div>
+                <div class="info-card">
+                    <h4>碳足跡「精準折算」</h4>
+                    <p>直接乘以當年「電力排碳係數」，算出每一小時、每一天產生了多少碳排放。</p>
+                </div>
+                <div class="info-card">
+                    <h4>多迴路細節監控</h4>
+                    <p>單獨知道冷氣、照明、電腦設備各別用了多少電，而非只有總表的模糊數字。</p>
+                </div>
+                <div class="info-card">
+                    <h4>專業級電力參數面板</h4>
+                    <div class="param-grid">
+                        <div class="param-tag"><span>電壓/電流</span>V / A</div>
+                        <div class="param-tag"><span>有效/無效功率</span>kW / kVAR</div>
+                        <div class="param-tag"><span>視在功率/因數</span>kVA / PF</div>
+                        <div class="param-tag"><span>系統頻率</span>Hz</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="intro" class="tab-content">
+        <div class="sub-nav">
+            <button class="sub-btn active" onclick="openSubTab(event, 'carbon-info')">🍀 什麼是碳盤查？</button>
+            <button class="sub-btn" onclick="openSubTab(event, 'meter-info')">📟 智慧電表介紹</button>
+        </div>
+
+        <div id="carbon-info" class="sub-content active">
+            <h2>企業綠色轉型的第一關：碳盤查</h2>
+            <p>碳盤查是指企業針對營運活動產生的溫室氣體（GHG）進行清查與計算。通常依照 ISO 14064-1 分為：</p>
+            <div class="grid-3" style="margin-top: 1.5rem;">
+                <div class="info-card" style="border-top: 6px solid #3b82f6;"><b>範疇一：直接排放</b><br><small>工廠煙囪、公司配車、冷媒洩漏。</small></div>
+                <div class="info-card" style="border-top: 6px solid #10b981;"><b>範疇二：能源間接</b><br><small>外購電力、蒸汽或熱能。</small></div>
+                <div class="info-card" style="border-top: 6px solid #f59e0b;"><b>範疇三：其他間接</b><br><small>供應商排碳、通勤、運輸。</small></div>
+            </div>
+            <h3 style="margin-top:2.5rem;">🛠️ 執行流程</h3>
+            <div class="process-step"><div class="step-num">1</div><div><b>邊界設定：</b>決定清查整間公司或特定廠區。</div></div>
+            <div class="process-step"><div class="step-num">2</div><div><b>排放源鑑別：</b>找出所有排碳設備。</div></div>
+            <div class="process-step"><div class="step-num">3</div><div><b>蒐集計算：</b>活動數據 × 係數 = 碳排放量。</div></div>
+            <div class="process-step"><div class="step-num">4</div><div><b>外部查證：</b>委託公正第三方機構（如 SGS）核發證書。</div></div>
+            <div style="background: #fff5f5; border-left: 5px solid var(--danger); padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+                <b>不做會發生什麼事？</b> 訂單流失（供應鏈踢除）、高額罰款、標籤為不環保企業。
+            </div>
+        </div>
+
+        <div id="meter-info" class="sub-content">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 style="border:none;">從數據收集到可視化：硬體運作流程</h2>
+                <p style="max-width: 800px; margin: 0.5rem auto 0; color: var(--secondary-color);">
+                    一套完整的智慧能源監控系統，是由多個關鍵硬體依序組合而成。以下將依據資料的流動順序，為您解析各個元件所扮演的角色：
+                </p>
+            </div>
+
+            <div class="grid-2" style="align-items: center;">
+                <div class="image-box">
+                    <img src="p3.jpg" alt="智慧監控系統硬體元件" style="border-radius: 12px;">
+                </div>
+                <div>
+                    <!-- 💡 備註：以下的步驟解說，是根據左方 p3 圖片的內容拆解而成 -->
+                    <div class="process-step">
+                        <div class="step-num">1</div>
+                        <div><b>電力數據量測 (三相/單相電表)</b><br>依據用電設備的規模，安裝對應的 SDT 三相或 SDM 單相電子式電表。它們是數據收集的起點，精準量測原始電力數據。</div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-num">2</div>
+                        <div><b>數據集中與遠傳 (通訊伺服器)</b><br>電表量測到的數據，會傳輸至 HF2211 這類的「通訊中繼站」，透過 WiFi 或有線網路穩定地傳送到後端系統。</div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-num">3</div>
+                        <div><b>數據整合與可視化 (HMI/雲端平台)</b><br>在 HMI 管理面板或雲端平台上，數據被整合並以圖表化呈現，讓管理者能一目了然地看到機台的即時用電、產量與花費。</div>
+                    </div>
+                    <div class="process-step" style="background: #f1f5f9;">
+                        <div class="step-num" style="background: var(--secondary-color);"><i class="fas fa-thermometer-half"></i></div>
+                        <div><b>(選配) 環境因子監控</b><br>可整合環境監測面板，同步監控配電箱的溫度、濕度等，提早發現因環境過熱可能導致的電力風險。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="material" class="tab-content">
+        <div class="motivation-expanded">
+            <h2 style="color: var(--primary-dark); border:none;"><i class="fas fa-lightbulb"></i> 開發動機：跨越數據的「最後一哩路」</h2>
+            <p>智慧電表雖然擁有強大的數據基礎，但往往缺乏與使用者對話的橋樑。對於管理者而言，電表數據僅僅是冷冰冰的數字；對於技術人員而言，實體安裝具備高壓電風險。</p>
+            <p>藉由 <b>VR 模擬系統</b>，我們創造了一個「虛擬實驗室」。使用者能嘗試不同的用電情境（如：更換節能電器、調整負載），達成<b>「先模擬、後行動」</b>的減碳策略。這不僅是培訓，更是決策的視覺化工具。</p>
+        </div>
+
+        <h3 style="text-align:center; font-size: 1.8rem; margin-bottom: 2rem;">核心教學目標</h3>
+        <div class="grid-3">
+            <div class="info-card" style="text-align: center;">
+                <i class="fas fa-map-marked-alt" style="font-size: 2.5rem; color: var(--accent-blue); margin-bottom: 1.2rem;"></i>
+                <h4>1. 環境理解與設定</h4>
+                <div style="text-align: left;">
+                    <div class="objective-item"><i class="fas fa-check"></i> 識別電表正確安裝位置</div>
+                    <div class="objective-item"><i class="fas fa-check"></i> 掌握單/三相接線邏輯</div>
+                    <div class="objective-item"><i class="fas fa-check"></i> 熟悉通訊參數與後台配置</div>
+                </div>
+            </div>
+            <div class="info-card" style="text-align: center;">
+                <i class="fas fa-tools" style="font-size: 2.5rem; color: var(--accent-blue); margin-bottom: 1.2rem;"></i>
+                <h4>2. 獨立作業能力</h4>
+                <div style="text-align: left;">
+                    <div class="objective-item"><i class="fas fa-check"></i> 獨立完成 CT 比流器掛載</div>
+                    <div class="objective-item"><i class="fas fa-check"></i> 正確操作斷路器與配線</div>
+                    <div class="objective-item"><i class="fas fa-check"></i> 完成數據傳輸檢測</div>
+                </div>
+            </div>
+            <div class="info-card" style="text-align: center;">
+                <i class="fas fa-chart-line" style="font-size: 2.5rem; color: var(--accent-blue); margin-bottom: 1.2rem;"></i>
+                <h4>3. 數據解讀分析</h4>
+                <div style="text-align: left;">
+                    <div class="objective-item"><i class="fas fa-check"></i> 解釋 V, A, kW, PF 意義</div>
+                    <div class="objective-item"><i class="fas fa-check"></i> 判讀波形並找出異常</div>
+                    <div class="objective-item"><i class="fas fa-check"></i> 轉化數據為減碳建議</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="simulation" class="tab-content">
+        <h2 style="text-align: center;">VR 虛擬安裝實驗室</h2>
+        <div style="width: 100%; height: 650px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+            <iframe src="https://tour.panoee.net/6a0d1b8bc24fa576842dc893" width="100%" height="100%" frameborder="0" allow="xr-spatial-tracking; vr; gyroscope; accelerometer; fullscreen; autoplay; xr" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="faq" class="tab-content">
+        <div class="faq-container">
+            <h3 style="color:var(--accent-blue); border-bottom:3px solid var(--accent-blue); padding-bottom:10px;">關於「碳盤查」與 ESG</h3>
+            <details>
+                <summary>供應鏈要求要做碳盤查（ISO 14064），你們的數據可以直接用嗎？</summary>
+                <p><b>可以的。</b> 傳統人工抄表容易出錯且具爭議，智慧電表提供的是<b>自動化、不可竄改的實時數據</b>。系統可一鍵產出各部門統計報表，是應對 <b>Apple, Google</b> 等大廠供應鏈稽核時最高效的數位佐證資料。</p>
+            </details>
+            <details>
+                <summary>碳盤查數據是可以直接提供給政府審查的嗎？</summary>
+                <p>EMS 提供的能源活動數據可作為碳盤查的重要數據來源，但正式碳排資料通常仍需透過 CMS 碳管理系統進一步進行排放源分類、碳排計算與報表整理。實際政府申報或查核作業，也通常會搭配第三方顧問或查證單位進行確認，以確保資料符合相關規範。</p>
+            </details>
+            <details>
+                <summary>軟體功能與能源管理對省電、減碳有什麼幫助？</summary>
+                <p>對於製造業工廠端，透過 EMS 可以即時監測各廠區、設備與產線的用電狀況，協助找出高耗能設備、待機耗能與異常用電情況，協助企業進一步做節能改善與用電最佳化。除了節能直接帶來的減碳效益外，能源數據採集的細化與自動化，也能大幅降低碳活動數據蒐集難度並提升數據可靠度。</p>
+            </details>
+
+            <h3 style="color:var(--accent-blue); border-bottom:3px solid var(--accent-blue); padding-bottom:10px; margin-top: 2rem;">關於「系統功能與串接」</h3>
+            <details>
+                <summary>除了電費，這套系統還能幫我做什麼？</summary>
+                <p>它能充當機台的<b>「健康檢查員」</b>。當機台受損，電流常會出現異常波動。系統能捕捉微小變化並預警，讓你能在故障停機前先安排預防性維修，避免巨大停產損失。</p>
+            </details>
+            <details>
+                <summary>我廠內已經有戰情室了，電表數據可以傳進去嗎？</summary>
+                <p><b>沒問題。</b> 支援 Modbus 或 API 標準介面。數據可同步串接至您現有的戰情室看板，讓你不用換視窗，就能在同一個螢幕上看見生產進度與即時能耗。</p>
+            </details>
+            <details>
+                <summary>能計算出尖峰、離峰，看出哪一廠區或設備的用電量最多嗎？</summary>
+                <p>可以，智慧電表會依實際安裝場域，在 EMS 系統中設定對應的設備或廠區歸屬，可透過設備、產線或廠區維度進行用電量比較與分析，並依數據回傳時間彙整出尖峰、半尖峰與離峰時段的耗電情況。</p>
+            </details>
+
+            <h3 style="color:var(--accent-blue); border-bottom:3px solid var(--accent-blue); padding-bottom:10px; margin-top: 2rem;">關於「導入評估與服務」</h3>
+            <details>
+                <summary>預計多久可以回收安裝成本？</summary>
+                <p>透過平均 5-15% 的能耗節省，通常在 <b>1.5 至 3 年內</b>即可回收成本。</p>
+            </details>
+            <details>
+                <summary>除了安裝智慧電表外還需要安裝什麼？</summary>
+                <p>為盡量減少對原有廠房線路的干預，目前方案主要採用 WIFI通訊，先對工廠端的網路與通訊基礎設施進行評估，必要時增設通訊設備或者是評估改走有線的通訊方式例如RS485 。</p>
+            </details>
+            <details>
+                <summary>請問整套方案的計費方式為何？後台的管理系統是另外購買的嗎？</summary>
+                <p>目前方案規劃以硬體買斷、軟體訂閱方式為主，會依照客戶實際需求的廠區數量、監測點位以及 IoT 設備數量進行評估與報價，EMS系統則會依需求的模組內容提供對應報價。</p>
+            </details>
+            <details>
+                <summary>有 24 小時客服專線嗎？數據出現異常怎麼支援？</summary>
+                <p>因能源管理系統通常以數據趨勢分析與告警通知為主，較少有7*24的支援服務，目前系統可透過告警模組即時通知客戶異常狀況，並提供遠端協助進行問題排查。若客戶有特殊需求，也可再依專案規劃對應的支援方式。</p>
+            </details>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTab(evt, tabId) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) tabcontent[i].classList.remove("active");
+        tablinks = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    function openSubTab(evt, subId) {
+        var i, subcontent, sublinks;
+        subcontent = document.getElementsByClassName("sub-content");
+        for (i = 0; i < subcontent.length; i++) subcontent[i].classList.remove("active");
+        sublinks = document.getElementsByClassName("sub-btn");
+        for (i = 0; i < sublinks.length; i++) sublinks[i].classList.remove("active");
+        document.getElementById(subId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // 常見問題手風琴 (Accordion) 互動效果
+    document.addEventListener("DOMContentLoaded", function() {
+        const faqs = document.querySelectorAll('.faq-container details');
+        faqs.forEach((faq) => {
+            faq.addEventListener('toggle', () => {
+                if (faq.open) {
+                    faqs.forEach((otherFaq) => {
+                        if (otherFaq !== faq && otherFaq.open) {
+                            otherFaq.open = false;
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
